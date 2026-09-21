@@ -7,6 +7,7 @@ import lombok.ToString;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
+import org.cloudburstmc.protocol.bedrock.data.inventory.HandSlot;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryActionData;
 import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryTransactionType;
@@ -60,6 +61,10 @@ public class InventoryTransactionPacket implements BedrockPacket {
      * @since v944
      */
     private int clientCooldownState;
+    /**
+     * @since v2192
+     */
+    private HandSlot hand = HandSlot.MAINHAND;
 
     @Override
     public final PacketSignal handle(BedrockPacketHandler handler) {

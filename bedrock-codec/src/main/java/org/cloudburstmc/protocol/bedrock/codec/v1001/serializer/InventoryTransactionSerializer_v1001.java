@@ -174,7 +174,7 @@ public class InventoryTransactionSerializer_v1001 extends InventoryTransactionSe
         });
     }
 
-    protected InventorySource readSource(ByteBuf buffer) {
+    private InventorySource readSource(ByteBuf buffer) {
         InventorySource.Type type = InventorySource.Type.byId(VarInts.readUnsignedInt(buffer));
 
         int containerId = 0;
@@ -200,7 +200,7 @@ public class InventoryTransactionSerializer_v1001 extends InventoryTransactionSe
         }
     }
 
-    protected void writeSource(ByteBuf buffer, InventorySource inventorySource) {
+    private void writeSource(ByteBuf buffer, InventorySource inventorySource) {
         requireNonNull(inventorySource, "InventorySource was null");
 
         VarInts.writeUnsignedInt(buffer, inventorySource.getType().id());

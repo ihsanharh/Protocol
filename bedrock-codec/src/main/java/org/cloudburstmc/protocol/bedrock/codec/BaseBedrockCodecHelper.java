@@ -18,10 +18,7 @@ import org.cloudburstmc.nbt.NBTInputStream;
 import org.cloudburstmc.nbt.NBTOutputStream;
 import org.cloudburstmc.nbt.NbtType;
 import org.cloudburstmc.nbt.NbtUtils;
-import org.cloudburstmc.protocol.bedrock.data.EncodingSettings;
-import org.cloudburstmc.protocol.bedrock.data.ExperimentData;
-import org.cloudburstmc.protocol.bedrock.data.PlayerAbilityHolder;
-import org.cloudburstmc.protocol.bedrock.data.PresenceConfiguration;
+import org.cloudburstmc.protocol.bedrock.data.*;
 import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
 import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityProperties;
@@ -450,7 +447,8 @@ public abstract class BaseBedrockCodecHelper implements BedrockCodecHelper {
         });
     }
 
-    protected InventorySource readSource(ByteBuf buffer) {
+    @Override
+    public InventorySource readSource(ByteBuf buffer) {
         InventorySource.Type type = InventorySource.Type.byId(VarInts.readUnsignedInt(buffer));
 
         switch (type) {
@@ -472,7 +470,8 @@ public abstract class BaseBedrockCodecHelper implements BedrockCodecHelper {
         }
     }
 
-    protected void writeSource(ByteBuf buffer, InventorySource inventorySource) {
+    @Override
+    public void writeSource(ByteBuf buffer, InventorySource inventorySource) {
         requireNonNull(inventorySource, "InventorySource was null");
 
         VarInts.writeUnsignedInt(buffer, inventorySource.getType().id());
@@ -634,6 +633,16 @@ public abstract class BaseBedrockCodecHelper implements BedrockCodecHelper {
 
     @Override
     public PresenceConfiguration readPresenceConfiguration(ByteBuf buffer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeGatheringsConfiguration(ByteBuf byteBuf, BedrockCodecHelper bedrockCodecHelper, GatheringsConfigurationJoinInfo gatheringsConfigurationJoinInfo) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GatheringsConfigurationJoinInfo readGatheringsConfiguration(ByteBuf byteBuf, BedrockCodecHelper bedrockCodecHelper) {
         throw new UnsupportedOperationException();
     }
 }

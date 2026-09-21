@@ -17,6 +17,9 @@ import java.util.UUID;
 @ToString(doNotUseGetters = true)
 public class PlayerListPacket implements BedrockPacket {
     private final List<Entry> entries = new ObjectArrayList<>();
+    /**
+     * @deprecated since v2168, now in Entry
+     */
     private Action action;
 
     @Override
@@ -33,11 +36,14 @@ public class PlayerListPacket implements BedrockPacket {
         REMOVE
     }
 
-
     @Data
     @ToString(doNotUseGetters = true)
     @EqualsAndHashCode(doNotUseGetters = true)
     public static class Entry {
+        /**
+         * @since v2168
+         */
+        private Action action;
         private final UUID uuid;
         private long entityId;
         private CharSequence name;
@@ -47,6 +53,9 @@ public class PlayerListPacket implements BedrockPacket {
         private SerializedSkin skin;
         private boolean teacher;
         private boolean host;
+        /**
+         * @deprecated since v2168, now in SerializedSkin
+         */
         private boolean trustedSkin;
         private boolean subClient;
         private Color color;

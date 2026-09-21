@@ -234,9 +234,10 @@ public class TextSerializationTest {
                 .append(Component.text("Diamond ", BedrockNamedTextColor.MATERIAL_DIAMOND))
                 .append(Component.text("Lapis ", BedrockNamedTextColor.MATERIAL_LAPIS))
                 .append(Component.text("Amethyst ", BedrockNamedTextColor.MATERIAL_AMETHYST))
-                .append(Component.text("Resin", BedrockNamedTextColor.MATERIAL_RESIN));
+                .append(Component.text("Resin ", BedrockNamedTextColor.MATERIAL_RESIN))
+                .append(Component.text("Party Blue", BedrockNamedTextColor.PARTY_BLUE));
 
-        String expected = "§gMinecoin §hQuartz §iIron §jNetherite §mRedstone §nCopper §pGold §qEmerald §sDiamond §tLapis §uAmethyst §vResin";
+        String expected = "§gMinecoin §hQuartz §iIron §jNetherite §mRedstone §nCopper §pGold §qEmerald §sDiamond §tLapis §uAmethyst §vResin §wParty Blue";
         assertEquals(expected, serialize(component));
         assertEquals(expected, roundTrip(expected));
     }
@@ -267,7 +268,7 @@ public class TextSerializationTest {
         packet.setRotation(Vector3f.ZERO);
         packet.setDeviceId("");
         packet.setHand(ItemData.AIR);
-        packet.setBuildPlatform(BuildPlatform.GOOGLE);
+        packet.setBuildPlatform(BuildPlatform.UNKNOWN);
         packet.setGameType(GameType.SURVIVAL);
         packet.setPlatformChatId("");
 

@@ -20,6 +20,7 @@ import org.cloudburstmc.protocol.bedrock.data.inventory.descriptor.ItemDescripto
 import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.request.ItemStackRequest;
 import org.cloudburstmc.protocol.bedrock.data.inventory.itemstack.response.ItemStackResponseContainer;
 import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryActionData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
 import org.cloudburstmc.protocol.bedrock.data.structure.StructureSettings;
 import org.cloudburstmc.protocol.bedrock.packet.InventoryTransactionPacket;
@@ -226,6 +227,10 @@ public interface BedrockCodecHelper {
 
     void readExperiments(ByteBuf buffer, List<ExperimentData> experiments);
 
+    InventorySource readSource(ByteBuf buffer);
+
+    void writeSource(ByteBuf buffer, InventorySource inventorySource);
+
     void writeExperiments(ByteBuf buffer, List<ExperimentData> experiments);
 
     ItemStackRequest readItemStackRequest(ByteBuf buffer);
@@ -275,4 +280,8 @@ public interface BedrockCodecHelper {
     void writePresenceConfiguration(ByteBuf buffer, PresenceConfiguration configuration);
 
     PresenceConfiguration readPresenceConfiguration(ByteBuf buffer);
+
+    void writeGatheringsConfiguration(ByteBuf byteBuf, BedrockCodecHelper bedrockCodecHelper, GatheringsConfigurationJoinInfo gatheringsConfigurationJoinInfo);
+
+    GatheringsConfigurationJoinInfo readGatheringsConfiguration(ByteBuf byteBuf, BedrockCodecHelper bedrockCodecHelper);
 }
