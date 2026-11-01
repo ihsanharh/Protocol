@@ -37,6 +37,7 @@ subprojects {
 
     dependencies {
         compileOnly(rootProject.libs.checker.qual)
+        testRuntimeOnly(rootProject.libs.junit.platform.launcher)
     }
 
     java {
