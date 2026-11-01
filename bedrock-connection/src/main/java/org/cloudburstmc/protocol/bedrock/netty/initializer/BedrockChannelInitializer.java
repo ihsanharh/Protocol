@@ -49,9 +49,9 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
     protected void preInitChannel(Channel channel) throws Exception {
         channel.pipeline().addLast(FrameIdCodec.NAME, RAKNET_FRAME_CODEC);
 
-        int rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        Integer rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
 
-        CompressionStrategy compression = getCompression(PacketCompressionAlgorithm.ZLIB, rakVersion, true);
+        CompressionStrategy compression = getCompression(PacketCompressionAlgorithm.ZLIB, rakVersion != null ? rakVersion : 11, true);
         // At this point all connections use not prefixed compression
         channel.pipeline().addLast(CompressionCodec.NAME, new CompressionCodec(compression, false));
     }
@@ -94,7 +94,10 @@ public abstract class BedrockChannelInitializer<T extends BedrockSession> extend
     }
 
     protected void initPacketCodec(Channel channel) throws Exception {
-        int rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        Integer rakVersion = channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        if (rakVersion == null) {
+            rakVersion = 11;
+        }
 
         switch (rakVersion) {
             case 11:

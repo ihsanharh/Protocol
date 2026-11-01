@@ -470,7 +470,8 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
     }
 
     public int getRakVersion() {
-        return this.channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        Integer rakVersion = this.channel.config().getOption(RakChannelOption.RAK_PROTOCOL_VERSION);
+        return rakVersion != null ? rakVersion : 11;
     }
 
     /*

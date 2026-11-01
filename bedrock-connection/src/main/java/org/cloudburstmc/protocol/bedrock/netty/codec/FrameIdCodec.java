@@ -12,12 +12,17 @@ import org.cloudburstmc.protocol.bedrock.netty.BedrockBatchWrapper;
 import java.util.List;
 
 @Sharable
-public class FrameIdCodec extends MessageToMessageCodec<RakMessage, BedrockBatchWrapper> {
+public class FrameIdCodec extends MessageToMessageCodec<Object, BedrockBatchWrapper> {
     public static final String NAME = "frame-id-codec";
     private final int frameId;
 
     public FrameIdCodec(int frameId) {
         this.frameId = frameId;
+    }
+
+    @Override
+    public boolean acceptInboundMessage(Object msg) throws Exception {
+        return msg instanceof RakMessage || msg instanceof ByteBuf;
     }
 
     @Override
@@ -38,11 +43,19 @@ public class FrameIdCodec extends MessageToMessageCodec<RakMessage, BedrockBatch
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, RakMessage msg, List<Object> out) throws Exception {
-        if (msg.channel() != 0 && msg.reliability() != RakReliability.RELIABLE_ORDERED) {
+    protected void decode(ChannelHandlerContext ctx, Object msg, List<Object> out) throws Exception {
+        ByteBuf in;
+        if (msg instanceof RakMessage rakMsg) {
+            if (rakMsg.channel() != 0 && rakMsg.reliability() != RakReliability.RELIABLE_ORDERED) {
+                return;
+            }
+            in = rakMsg.content();
+        } else if (msg instanceof ByteBuf buf) {
+            in = buf;
+        } else {
             return;
         }
-        ByteBuf in = msg.content();
+
         if (!in.isReadable()) {
             return;
         }
