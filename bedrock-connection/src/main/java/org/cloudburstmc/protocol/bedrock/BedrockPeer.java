@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -14,7 +15,7 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.cloudburstmc.netty.channel.raknet.RakDisconnectReason;
+import org.cloudburstmc.netty.channel.TransportDisconnectReason;
 import org.cloudburstmc.netty.channel.raknet.config.RakChannelOption;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
 import org.cloudburstmc.protocol.bedrock.codec.BedrockCodecHelper;
@@ -31,6 +32,7 @@ import org.cloudburstmc.protocol.bedrock.netty.codec.encryption.BedrockEncryptio
 import org.cloudburstmc.protocol.bedrock.netty.codec.packet.BedrockPacketCodec;
 import org.cloudburstmc.protocol.bedrock.netty.initializer.BedrockChannelInitializer;
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.SubClientLoginPacket;
 import org.cloudburstmc.protocol.bedrock.util.EncryptionUtils;
 
 import javax.crypto.SecretKey;
@@ -110,8 +112,25 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
             return;
         }
         int targetId = wrapper.getTargetSubClientId();
-        BedrockSession session = this.sessions.computeIfAbsent(targetId, this::onSessionCreated);
+        BedrockSession session = this.sessions.get(targetId);
+        if (session == null) {
+            if (!this.opensSession(wrapper)) {
+                return;
+            }
+            session = this.onSessionCreated(targetId);
+            this.sessions.put(targetId, session);
+        }
         session.onPacket(wrapper);
+    }
+
+    /**
+     * Whether a packet addressed to a session that does not exist yet may create it. On a server a sub-client's
+     * session only starts with that sub-client's login.
+     */
+    protected boolean opensSession(BedrockPacketWrapper wrapper) {
+        return wrapper.getTargetSubClientId() == 0
+                || this.channel.attr(PacketDirection.ATTRIBUTE).get() != PacketDirection.CLIENT_BOUND
+                || wrapper.getPacket() instanceof SubClientLoginPacket;
     }
 
     protected BedrockSession onSessionCreated(int sessionId) {
@@ -145,8 +164,12 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
         try {
             BedrockPacketWrapper packet;
             boolean wrotePacket = false;
+            // The per-write futures are never used here; the batch encoder completes them and
+            // drops them. A void promise skips allocating one per packet, and write failures
+            // still reach the pipeline as exceptions.
+            ChannelPromise voidPromise = this.channel.voidPromise();
             while ((packet = this.packetQueue.poll()) != null) {
-                this.channel.write(packet);
+                this.channel.write(packet, voidPromise);
                 wrotePacket = true;
             }
             if (wrotePacket) {
@@ -230,10 +253,13 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
         GlobalEventExecutor.INSTANCE.schedule(retry, REJECTED_RETRY_DELAY_MILLIS, TimeUnit.MILLISECONDS);
     }
 
-    protected void onRakNetDisconnect(ChannelHandlerContext ctx, RakDisconnectReason reason) {
+    protected void onTransportDisconnect(ChannelHandlerContext ctx, TransportDisconnectReason reason) {
         CharSequence disconnectReason = BedrockDisconnectReasons.getReason(reason);
         for (BedrockSession session : this.sessions.values()) {
-            session.disconnectReason = disconnectReason;
+            // Keeps a reason this side gave when it closed
+            if (session.disconnectReason == BedrockDisconnectReasons.UNKNOWN) {
+                session.disconnectReason = disconnectReason;
+            }
         }
     }
 
@@ -481,8 +507,8 @@ public class BedrockPeer extends ChannelInboundHandlerAdapter {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof RakDisconnectReason) {
-            onRakNetDisconnect(ctx, (RakDisconnectReason) evt);
+        if (evt instanceof TransportDisconnectReason) {
+            onTransportDisconnect(ctx, (TransportDisconnectReason) evt);
         }
     }
 

@@ -17,12 +17,13 @@ public class EncodingSettings {
     public static final EncodingSettings DEFAULT = EncodingSettings.builder()
             .maxListSize(1536)
             .maxByteArraySize(1024 * 1024) // 1MB
-            .maxNetworkNBTSize(1024 * 1024 * 512) // 1.5MB
+            .maxNetworkNBTSize(1024 * 1536) // 1.5MB
             .maxItemNBTSize(1024 * 100) // 100KB
             .maxStringLength(1024 * 32) // 32KB
             .maxGeometryDataSize(1024 * 512)
             .maxItemStackTagLength(64)
             .maxInventoryActionsOrRequests(100)
+            .maxCraftResults(16) // vanilla recipes have at most 2
             .build();
 
     /**
@@ -39,6 +40,7 @@ public class EncodingSettings {
             .maxGeometryDataSize(1024 * 512)
             .maxItemStackTagLength(64)
             .maxInventoryActionsOrRequests(100)
+            .maxCraftResults(16)
             .build();
 
     /**
@@ -52,9 +54,10 @@ public class EncodingSettings {
             .maxNetworkNBTSize(1024 * 512) // 500KB
             .maxItemNBTSize(1024 * 100) // 100KB
             .maxStringLength(1024 * 32) // 32KB
-            .maxGeometryDataSize(1024 * 256)
+            .maxGeometryDataSize(1024 * 512)
             .maxItemStackTagLength(64)
             .maxInventoryActionsOrRequests(100)
+            .maxCraftResults(16)
             .build();
 
     /**
@@ -72,6 +75,7 @@ public class EncodingSettings {
             .maxItemStackTagLength(-1)
             .maxGeometryDataSize(-1)
             .maxInventoryActionsOrRequests(-1)
+            .maxCraftResults(-1)
             .build();
 
     private final int maxListSize;
@@ -82,4 +86,5 @@ public class EncodingSettings {
     private final int maxItemStackTagLength;
     private final int maxGeometryDataSize;
     private final int maxInventoryActionsOrRequests;
+    private final int maxCraftResults;
 }

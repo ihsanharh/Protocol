@@ -1,6 +1,7 @@
 package org.cloudburstmc.protocol.bedrock.util;
 
 import lombok.experimental.UtilityClass;
+import org.cloudburstmc.protocol.bedrock.codec.LoginLimits;
 import org.cloudburstmc.protocol.bedrock.data.auth.AuthPayload;
 import org.cloudburstmc.protocol.bedrock.data.auth.AuthType;
 import org.cloudburstmc.protocol.bedrock.data.auth.CertificateChainPayload;
@@ -215,6 +216,7 @@ public class EncryptionUtils {
     }
 
     public static byte[] verifyClientData(String clientDataJwt, PublicKey identityPublicKey) throws JoseException {
+        LoginLimits.checkJwtHeader(clientDataJwt);
         JsonWebSignature clientData = new JsonWebSignature();
         clientData.setCompactSerialization(clientDataJwt);
         clientData.setKey(identityPublicKey);
@@ -302,6 +304,11 @@ public class EncryptionUtils {
                     // the second chain entry has to be signed by Mojang
                     if (i == 1 && !currentKey.equals(MOJANG_PUBLIC_KEY)) {
                         throw new IllegalStateException("The chain isn't signed by Mojang!");
+                    }
+
+                    // the client signs the first entry itself, so only the others' validity windows hold
+                    if (i > 0) {
+                        ChainEntryWindow.check(chain.get(i));
                     }
 
                     parsedPayload = JsonUtil.parseJson(signature.getUnverifiedPayload());
